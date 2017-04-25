@@ -23,14 +23,13 @@ if __name__ == "__main__":
 
     index=[int(i[0]) for i in data]
     value=[float(i[1]) for i in data]
-
+    print index,value
     plt.xlabel("number of threads")
     plt.ylabel("execution time")
-    plt.axis([60,120,180,240])
-    plt.plot(index,value)
     plt.grid(True)
+    plt.plot(index,value)
     plt.show()
-    fig.savefig(data_name+".png")
+    fig.savefig(str(data_name.strip()+".png"))
     print data_name,index,value
 
 
