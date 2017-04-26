@@ -1,53 +1,53 @@
 ### BLACKSCHOLES draft
 
-![](./graph/blackscholes.png)
+![](./draft_result/graph/blackscholes.png)
 
 ### canneal draft
 
-![](./graph/canneal.png)
+![](./draft_result/graph/canneal.png)
 
 ### facesim
 
-![](./graph/facesim.png)
+![](./draft_result/graph/facesim.png)
 
 ### fluidanimate
 
-![](./graph/fluidanimate.png)
+![](./draft_result/graph/fluidanimate.png)
 
 ### raytrace
 
-![](./graph/raytrace.png)
+![](./draft_result/graph/raytrace.png)
 
 ### swaptions
 
-![](./graph/swaptions.png)
+![](./draft_result/graph/swaptions.png)
 
 ### x264
 
-![](./graph/x264.png)
+![](./draft_result/graph/x264.png)
 
 ### bodytrack
 
-![](./graph/bodytrack.png)
+![](./draft_result/graph/bodytrack.png)
 
 ### dedup
 
-![](./graph/dedup.png)
+![](./draft_result/graph/dedup.png)
 
 ### ferret
 
-![](./graph/ferret.png)
+![](./draft_result/graph/ferret.png)
 
 ### freqmine
 
-![](./graph/freqmine.png)
+![](./draft_result/graph/freqmine.png)
 
 ### streamcluster
 
-![](./graph/streamcluster.png)
+![](./draft_result/graph/streamcluster.png)
 
 ### vips
 
-![](./graph/vips.png)
+![](./draft_result/graph/vips.png)
 
 
