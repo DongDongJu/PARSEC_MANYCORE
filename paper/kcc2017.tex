@@ -72,23 +72,22 @@
 
 
 % set title, author, abstract
-\title{매니코어 환경에서 PARSEC 벤치마크 ROI 확장성 분석}
+\title{매니코어 환경에서 PARSEC 벤치마크 \\ROI 확장성 분석}
 \author{
+xxx
 }
 \engtitle{An Analysis of ROI Scalability on PARSEC \\Benchmark for Many-core
 System} \engauthor{
+xxx\\
 }
 \abstract{
-한국정보과학회는 정보과학에 관한 기술을 발전, 보급시키고 회원상호간의 친목을 
-도모하기 위하여 1973년 3월 3일에 설립되었으며, 
-정보통신부에 `사단법인 한국정보과학회'로 등록되었다.  
-학회의 주요 활동은 
-1) 컴퓨터 기술 및 이론에 관한 새로운 연구결과를 발표하는 기회를 제공하고, 
-2) 국내의 컴퓨터 관련 기술 개발에 참여 하며, 
-3) 국제적 학술 교류 및 협력 증진을 도모 하고, 
-4) 회원 상호간의 친목을 증진시키는 것이다.
+본 논문은 리눅스 커널이 100코어 이상의 매니코어 환경에서 멀티 스레드 기반 워크로드에 대해서 
+대한 문제점을 제시하였다.
+이를 위해 공유 메모리를 사용하는 환경에서 리눅스의 확장성에 문제점을 분석하였다.
+문제점을 분석하기 위해 멀티 스레드 기반 벤치마크인 PARSEC 벤치마크를 사용하였으며, 워크로드의 
+ROI(Regine of Interest)의 부분만 측정하여 확장성을 분석하였다.
+분석 결과 대부분 워크로드가 확장성에 대해서 문제점을 가진다. 
 }
-
 
 \begin{document}
 
@@ -96,18 +95,29 @@ System} \engauthor{
 
 
 \section{서 론}
-학회는 설립 당시 500여 명의 회원으로 시작해서 지난 38년 동안 눈부신 발전을 거듭하여 
-2011년 1월 현재 일반회원 30,080 여명, 특별회원 133개 기관, 단체회원 269개 기관이 등록된 대규모 학회로 성장하였다. 
-본 학회는 1977년에 IFIP(International Federation for Information Processing)에 정회원으로 가입했고, 
-ACM.IEEE Computer Society.SEARCC(The South East Asia Regional Computer Conference)와의 협력관계를 맺음으로써 
-국제 학술교류 및 협력을 강화하고 있으며, 또한 IPSJ(일본정보처리학회)와도 유대관계를 유지하고 있다.
+코어 수가 증가함에 따라 서버 환경이 멀티코어에서 매니코어로 증가하고 있다. 
+이러한 매니코어 환경에 대해서 리눅스 커널의 확장성은 굉장히 중요하다. 
+그동안 리눅스의 확장성을 분석하기 위한 많은 연구들이 진행되어 왔다. 
+멀티 프로세스 워크로드를 대상으로 리눅스 커널에 대한 확장성에 대해서 문제점을 제시하였다.
+
+하지만 실제 공유 메모리 환경에서는 멀티 프로세스 기반의 워크로드보다는 멀티 스레드 기반의 
+워크로드가 더 많은 상황이다.
+본 연구는 이처럼 중요한 공유 메모리 기반의 매니코어 시스템에서 멀티 스레드를 대상으로 확장성을 분석하였다.
+
+본 연구는 향후 100코어 이상의 공유 메모리 기반의 매니코어 확장성 연구에 대해서 반드시 필요한 연구이다.
+
 
 
 \section{관련 연구}
 
+멀티 스레드기반의 워크로드를 대상으로 리눅스 커널의 확장성 분석에 대한 연구는 리눅스의 
+address space에서 사용되는 동기화 기법인 mmap\_sem 때문에 발생하는 문제를 RCU기반의 address space를 
+개발한 BonsaiVM과 BonsaiVM의 문제점인 write 간의 병목을 해결하기 위해 address space가 중복되지 않도록
+자료구조를 구성하는 연구인 RadixVM이 있다.
 
 \section{실험 환경}
 
+실험 환경은 그림 x-x와 같으며, 120코어 인텔 xeon 
 \begin{figure}[h]
   \begin{center}
      \includegraphics[width=0.3\textwidth]{fig/xeon}
@@ -117,19 +127,11 @@ ACM.IEEE Computer Society.SEARCC(The South East Asia Regional Computer Conferenc
 \end{figure}
 
 
+측정 환경은 아래와 같다.
+
 \begin{table}[h!]
   \centering
   \small
-  \begin{tabular}{l c c c c} \toprule
-    워크로드 & 설명 & 입력 데이터\\
-    \midrule
-    Word Count & 10G & 4G & none & text \\ 
-    Naive Basian & 10G & 4G & none & text\\
-    Grep & 30G & 4G &  & text\\
-    K-means & 4G & 4G & k=8 & graph\\
-    \bottomrule
-  \end{tabular}
-  
   \begin{tabular}{l l l l l} \toprule
     JVM & Spark & OS & Distribution\\
     \midrule
@@ -140,13 +142,35 @@ ACM.IEEE Computer Society.SEARCC(The South East Asia Regional Computer Conferenc
   \label{tab:memuse}
 \end{table}
 
-\section{확장성 실험}
+\begin{figure*}[tb!]
+    \centering
+    \includegraphics[width=4.8in]{graph/scalability.eps}
+    \caption{Performance scalability using docker container.}
+    \label{fig:docker}
+\end{figure*}
 
+\section{PARSEC 워크로드}
+\begin{itemize}
+    \item \textbf{Blackscholes.} 위 유의사항 3개항목을 제외한 논문작성폰트, 크기는 임의 사용가능합니다. 
+    단, 논문집(Proceedings) 제작시 축소 인쇄하므로 글자크기를 9pt 이하는 사용하지 마시기 바랍니다.
+    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
+    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
+    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
+    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
+    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
+    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
+    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
+    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
+    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
+    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
+    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
+    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
+\end{itemize}
+
+\section{확장성 실험}
 
 \section{PARSEC CPU 사용량 분석}
 
-
-\section{PARSEC 메모리 사용량 분석}
 
 
 \section{결론 및 향후 연구}
