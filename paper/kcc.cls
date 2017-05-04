@@ -8,7 +8,7 @@
 \DeclareOption*{\PassOptionsToClass{\CurrentOption}{article}}
 \ProcessOptions\relax
 
-\LoadClass[10pt,a4paper,twocolumn]{article}
+\LoadClass[9pt,a4paper,twocolumn]{article}
 
 % set default parpar margin
 \usepackage[top=3cm, left=1cm, right=1cm, bottom=2cm]{geometry}
@@ -72,7 +72,7 @@
             {\fontsize{10}{10}\selectfont {\bfseries {\@author}}}
         \fi
         \par
-%       \vspace{3mm}
+       \vspace{18mm}
         {\fontsize{14}{14}\selectfont {\bfseries {\@engtitle}} \par}
         \vspace{2mm}
         \if@preprint
@@ -81,10 +81,10 @@
         \else
             {\fontsize{10}{10}\selectfont {\bfseries {\@engauthor}}}
         \fi
-        \vspace{3mm}
+        \vspace{18mm}
         {\bfseries 요 \ \ 약 \par}
-        \vspace{1mm}
-        \parbox{15.8cm}{\fontsize{9}{9}\selectfont {\quad\@abstract} \par}
+        \vspace{3mm}
+        \parbox{14.8cm}{\fontsize{9}{9}\selectfont {\quad\@abstract} \par}
     \end{center}
     \vspace{5mm}
     ]

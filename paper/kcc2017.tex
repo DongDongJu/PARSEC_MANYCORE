@@ -72,110 +72,182 @@
 
 
 % set title, author, abstract
-\title{매니코어 환경에서 PARSEC 벤치마크 \\ROI 확장성 분석}
+\title{매니코어 환경에서 PARSEC 벤치마크 ROI 확장성 분석}
 \author{
-xxx
 }
 \engtitle{An Analysis of ROI Scalability on PARSEC \\Benchmark for Many-core
 System} \engauthor{
-xxx\\
 }
 \abstract{
-본 논문은 리눅스 커널이 100코어 이상의 매니코어 환경에서 멀티 스레드 기반 워크로드에 대해서 
-대한 문제점을 제시하였다.
-이를 위해 공유 메모리를 사용하는 환경에서 리눅스의 확장성에 문제점을 분석하였다.
+본 논문은 최신 리눅스 커널인 4.11-rc8을 대상으로 100코어 이상의 매니코어 환경에서 
+멀티 스레드 기반 워크로드에 대해서 대한 문제점을 제시하였다.
+이를 위해 공유 메모리를 사용하는 환경에서 리눅스의 확장성에 대한 문제점을 분석하였다.
 문제점을 분석하기 위해 멀티 스레드 기반 벤치마크인 PARSEC 벤치마크를 사용하였으며, 워크로드의 
-ROI(Regine of Interest)의 부분만 측정하여 확장성을 분석하였다.
-분석 결과 대부분 워크로드가 확장성에 대해서 문제점을 가진다. 
+병력화 부분인 ROI(Regine of Interest)의 부분만 추출 후 측정하여 확장성을 분석하였다.
+분석 결과 대부분 워크로드가 확장성에 대해서 문제점을 가지며, 코어 수가 증가 할 수록 
+커널에서 많은 시간을 소모 하였다.
 }
 
 \begin{document}
 
 \maketitle
 
-
 \section{서 론}
 코어 수가 증가함에 따라 서버 환경이 멀티코어에서 매니코어로 증가하고 있다. 
 이러한 매니코어 환경에 대해서 리눅스 커널의 확장성은 굉장히 중요하다. 
-그동안 리눅스의 확장성을 분석하기 위한 많은 연구들이 진행되어 왔다. 
-멀티 프로세스 워크로드를 대상으로 리눅스 커널에 대한 확장성에 대해서 문제점을 제시하였다.
+그동안 리눅스의 확장성을 분석하기 위한 많은 연구들이 진행되어 왔다~\cite{Etri}. 
 
+우리의 이전 연구는 멀티 프로세스 워크로드를 대상으로 리눅스 커널에 대한 확장성에 
+대해서 문제점을 제시하였고, 문제를 해결 하였다~\cite{kesl1}~\cite{kesl2}. 
 하지만 실제 공유 메모리 환경에서는 멀티 프로세스 기반의 워크로드보다는 멀티 스레드 기반의 
 워크로드가 더 많은 상황이다.
-본 연구는 이처럼 중요한 공유 메모리 기반의 매니코어 시스템에서 멀티 스레드를 대상으로 확장성을 분석하였다.
 
-본 연구는 향후 100코어 이상의 공유 메모리 기반의 매니코어 확장성 연구에 대해서 반드시 필요한 연구이다.
+그동안 멀티 스레드 기반의 확장성 문제도 해결하고자 시도가 있었으며, 
+그 중 리눅스 커널의 address space 문제인 mmap/munmap 과 페이지 폴트간의 경쟁 
+때문에 발생하는 문제를 해결하는 연구들이 있었다~\cite{AustinTClements2012RCUBalancedTrees}. 
+하지만 이런한 연구들은 복잡성과 안정성 때문에 
+여전히 모두 최신 리눅스 커널에 반영되지 못하고 있다.
+
+리눅스 커널은 확장성을 위해 많은 패치들이 적용되고 있다. 
+따라서 최신 리눅스 커널의 확장성을 분석하는 것도 중요하다. 
+본 연구는 이처럼 최신 리눅스 커널을 대상으로 
+공유 메모리 기반의 매니코어 시스템에서 멀티 스레드를 
+대상으로 확장성을 분석하였다.
+
+분석은 멀티 스레드 기반 워크로드로 이루어진 PARSEC 벤치마크~\cite{parsecbench}를 이용하였으며, 각 워크로드 중
+실제 병렬화가 수행되는 구간인 ROI(Regine of Interest)의 확장성을 분석하였다. 
+본 연구는 향후 100코어 이상의 공유 메모리 기반의 매니코어 확장성 연구에 대해서 
+반드시 필요한 사전 연구이다.
+
+-----------------------------------------------------------------------------
+* 본 연구는 xx
+
 
 
 
 \section{관련 연구}
 
 멀티 스레드기반의 워크로드를 대상으로 리눅스 커널의 확장성 분석에 대한 연구는 리눅스의 
-address space에서 사용되는 동기화 기법인 mmap\_sem 때문에 발생하는 문제를 RCU기반의 address space를 
-개발한 BonsaiVM과 BonsaiVM의 문제점인 write 간의 병목을 해결하기 위해 address space가 중복되지 않도록
-자료구조를 구성하는 연구인 RadixVM이 있다.
+address space에서 사용되는 동기화 기법인 mmap\_sem 때문에 발생하는 문제를 RCU기반의 
+address space를 개발한 BonsaiVM~\cite{AustinTClements2012RCUBalancedTrees}이 있다.
+다음으로 BonsaiVM의 문제점인 write 간의 병목을 해결하기 위해 address space가 중복되지 
+않도록 자료구조를 구성하는 연구인 RadixVM~\cite{Clements2013RadixVM}이 있다.
 
 \section{실험 환경}
 
-실험 환경은 그림 x-x와 같으며, 120코어 인텔 xeon 
+실험 환경은 그림 ~\ref{fig:parsec}와 같으며, 120코어 인텔 xeon기반의 8소켓 머신이다. 
 \begin{figure}[h]
   \begin{center}
      \includegraphics[width=0.3\textwidth]{fig/xeon}
   \end{center}
-  \caption{Test-bed Intel Xeon architecture.}
-  \label{fig:basic}
+  \caption{매니코어 실험 환경 .}
+  \label{fig:xeon}
 \end{figure}
-
-
-측정 환경은 아래와 같다.
-
-\begin{table}[h!]
-  \centering
-  \small
-  \begin{tabular}{l l l l l} \toprule
-    JVM & Spark & OS & Distribution\\
-    \midrule
-    Openjdk 1.8.0\_91 & 1.3.1 & 1.2.1 & Linux 4.5-rc6 & Ubuntu 14.04\\ 
-    \bottomrule
-  \end{tabular}
-  \caption{System information and configuration values.}
-  \label{tab:memuse}
-\end{table}
 
 \begin{figure*}[tb!]
     \centering
-    \includegraphics[width=4.8in]{graph/scalability.eps}
-    \caption{Performance scalability using docker container.}
-    \label{fig:docker}
+    \includegraphics[width=4.8in]{graph/PARSEC.eps}
+    \caption{벤치마크 실험 결과.}
+    \label{fig:parsec}
 \end{figure*}
 
-\section{PARSEC 워크로드}
-\begin{itemize}
-    \item \textbf{Blackscholes.} 위 유의사항 3개항목을 제외한 논문작성폰트, 크기는 임의 사용가능합니다. 
-    단, 논문집(Proceedings) 제작시 축소 인쇄하므로 글자크기를 9pt 이하는 사용하지 마시기 바랍니다.
-    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
-    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
-    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
-    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
-    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
-    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
-    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
-    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
-    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
-    \item \textbf{Bodytrack.} 논문심사는 저자와 심사위원 상호 비공개로 진행됩니다. 
-    따라서, 심사용(저자정보 삭제)과 출판용(저자정보 포함)으로 나눠 제출합니다. 
-    심사용은 투고시, 출판용은 심사후 지정된 수정기간중에 각 업로드 하시면 됩니다. 
-\end{itemize}
+측정 환경은 표 ~\ref{tab:config}와 같은 버전의 소프트웨어를 이용하였다. 
+그리고 입력 데이터는 PARSEC 벤치마크에서 제공하는 native를 이용하였다.
 
-\section{확장성 실험}
-
-\section{PARSEC CPU 사용량 분석}
+\begin{table}[h!]
+  \caption{소프트웨어 버전 및 입력 데이터.}
+  \centering
+  \small
+  \begin{tabular}{l l l l l} \toprule
+    운영체제 & 배포판 & PARSEC 버전 & 입력 데이터\\
+    \midrule
+    Linux 4.11-rc8 & Ubuntu 14.04 & PARSEC 3.0 & Native & \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:config}
+\end{table}
 
 
+\section{워크로드 설명}
+본 연구에서는 PARSEC 벤치마크 중 9개의 벤치마크를 대상으로 측정을 하였다. 
+각 워크로드의 설명과, 벤치마크에서 강조하고 있는 Data의 공유 정도 그리고
+ 락과 배리어등의 동기화 기법의 수에 대한 정보는  표~\ref{tab:workload}와 같다~\cite{parsecbench}.
+
+\begin{table}[h!]
+  \caption{워크로드 설.}
+  \centering
+  \scriptsize 
+  \begin{tabular}{l l l l l} \toprule 
+    워크로드명 & 설명 & 데이터 공유 & 동기화 수 & 병렬화 모델\\
+    \midrule
+    blackscholes & 재정 분석 & 낮음 & 8 & data-parallel\\
+    \midrule
+    bodytrack & 컴퓨터 비젼 & 높음 & 2661 & data-parallel\\
+    \midrule
+    canneal & Engineering & 높음 & 34 & unstructured\\
+    \midrule
+    dedup & 엔터프라이즈 저장소 & 높음 & 160598 & pipeline\\
+    \midrule
+    ferret & 유사 검색 & 높음 & 345778 & pipeline\\
+    \midrule
+    freqmine & 데이터 마이닝 & 높음 & 990025 & data-parallel\\
+    \midrule
+    streamcluster & 데이터 마이닝 & 낮음 & 129918 & data-parallel\\
+    \midrule
+    swaptions & 재정 분석 & 낮음 & 23 & data-parallel \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:workload}
+\end{table}
+
+\section{워크로드 및 확장성 실험 결과}
+
+PARSEC의 실험 결과는 그림 ~\ref{fig:parsec}와 같다. 
+
+Blackscholes.은 뭐 어쩌구 저쩌구\ldots 등등\ldots.
 
 \section{결론 및 향후 연구}
 
+PARSEC의 ROI 부분만 측정하여 분석한 결과 PASEC의 대부분의 워크로드는 확장성에 문제를 
+가지고 있다. PARSEC은 공유 메모리 기반의 멀티 쓰레드를 이용한 워크로드로 구성되어 
+있는 벤치마크이다.
+향후 연구로는 본 연구의 결과를 이용하여 리눅스의 매니코어 시스템에서 멀티 쓰레드의 
+문제점을 분석할 예정이다.
+
 \bibliographystyle{ieeetr}
-\bibliography{ref}
+\begin{thebibliography}{7}
+\bibitem{Etri}
+정진환, 김강호, 김진미, 정성인. 
+\newblock Manycore 운영체제 동향. 
+\newblock 전자통신 동향 분석 29권 5호, 2014. 
+\bibitem{kesl1}
+경주현, 임성수.
+\newblock 매니코어 시스템을 위한 리눅스 가상 메모리 관리의 락 경합 분석. 
+\newblock 한국정보과학회, 한국정보과학회 학술발표논문집 , 2015.6, 1571-1573, 2015
+\bibitem{kesl2}
+경주현, 윤성민, 임성수.
+\newblock 매니코어 환경에서 로그 기반 동시적 업데이트 기법을 활용한 리눅스 커널 확장성 개선.
+\newblock 한국정보과학회 학술발표논문집 , 2016.12, 512-513, 2016
+\bibitem{AustinTClements2012RCUBalancedTrees}
+Austin~T. Clements, M.~Frans Kaashoek, and Nickolai Zeldovich.
+\newblock Scalable address spaces using {RCU} balanced trees.
+\newblock In {\em Architectural Support for Programming Languages and Operating
+  Systems (ASPLOS 2012)}, pages 199--210, London, UK, February 2012.
+\bibitem{parsecbench}
+Bienia, Christian and Kumar, Sanjeev and Singh, Jaswinder Pal and Li, Kai
+\newblock The PARSEC benchmark suite: characterization and architectural
+implications.
+\newblock PACT '08 Proceedings of the 17th international
+conference on Parallel architectures and compilation techniques Pages 72-81 . 2008.
+\bibitem{Clements2013RadixVM}
+Austin~T. Clements, M.~Frans Kaashoek, and Nickolai Zeldovich.
+\newblock Radixvm: Scalable address spaces for multithreaded applications.
+\newblock In {\em Proceedings of the 8th ACM European Conference on Computer
+  Systems}, EuroSys '13, pages 211--224, New York, NY, USA, 2013.
+
+\end{thebibliography}
+
+%\bibliographystyle{ieeetr}
+%\bibliography{ref}
 
 \end{document}

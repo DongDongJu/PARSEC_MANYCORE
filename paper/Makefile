@@ -7,7 +7,7 @@ EPSSOURCES = \
 
 all: $(TARGET).pdf
 
-$(TARGET).pdf: $(LATEXSOURCES) $(EPSSOURCES) eps2pdf 
+$(TARGET).pdf: $(LATEXSOURCES) $(EPSSOURCES) eps2pdf
 	sh utilities/runlatex.sh $(TARGET) bib
 
 .PHONY: view
