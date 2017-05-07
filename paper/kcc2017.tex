@@ -174,11 +174,11 @@ address space를 개발한 BonsaiVM~\cite{AustinTClements2012RCUBalancedTrees}�
  락과 배리어등의 동기화 기법의 수에 대한 정보는  표~\ref{tab:workload}와 같다~\cite{parsecbench}.
 
 \begin{table}[h!]
-  \caption{워크로드 설.}
+  \caption{워크로드 설명}
   \centering
   \scriptsize 
   \begin{tabular}{l l l l l} \toprule 
-    워크로드명 & 설명 & 데이터 공유 & 동기화 수 & 병렬화 모델\\
+    워크로드명 &  & 데이터 공유 & 동기화 수 & 병렬화 모델\\
     \midrule
     blackscholes & 재정 분석 & 낮음 & 8 & data-parallel\\
     \midrule
@@ -192,6 +192,8 @@ address space를 개발한 BonsaiVM~\cite{AustinTClements2012RCUBalancedTrees}�
     \midrule
     freqmine & 데이터 마이닝 & 높음 & 990025 & data-parallel\\
     \midrule
+    raytrace & 재정 분석 & 낮음 & 23 & data-parallel \\
+    \midrule
     streamcluster & 데이터 마이닝 & 낮음 & 129918 & data-parallel\\
     \midrule
     swaptions & 재정 분석 & 낮음 & 23 & data-parallel \\
@@ -201,16 +203,52 @@ address space를 개발한 BonsaiVM~\cite{AustinTClements2012RCUBalancedTrees}�
 \end{table}
 
 \section{워크로드 및 확장성 실험 결과}
+ 이번 장에선 본 연구는 두가지의 실험 결과를 바탕으로 결과를 도출해 내었다. 모든 실험은 15회 기준 평균 값으로 진행되었다.
+첫번째로 각 프로그램마다 지정한 ROI가 프로그램의 확장성에 영향을 끼치는지를 확인하고 실험한 프로그램당 스레드별 실행시간을 기준으로 확장성을 확인해보았다.
+\subsection{ROI (Region Of Interest)}
+ 먼저 ROI 부분이란 실제 병렬화되어서 실행되는 구간이다. 이 구간을 제외한 부분은 프로그램 실행시 필요한 초기화 부분이 대부분을 차지하고 있다. 표 ~\ref{tab:ROI_ratio}에서 확인할 수 있는 정적인 실행시간을 제외하고, ROI 부분만 확인 하였을때 모든 프로그램에서 최대 스레드 x0.7 수준의 성능향상이 있었다. 이로 비추어 볼때 실제로 우리가 측정하는 ROI시간들이 프로그램의 성능을 측정한다고 볼 수 있다.
+\begin{table}
+\caption{비 ROI 실행 시간} 
+\label{tab:ROI_ratio}
+\centering
+\begin{tabular}{c|c|c}
+\hline
+워크로드 명 & 평균 실행시간 (s) & 전체 대비 비(\%) \\ \hline
+blackscholes & 21.23 & 12.3 \\ \hline
+bodytrack & 0.10 & 0.2 \\ \hline
+canneal & 47.37 & 8.7 \\ \hline
+dedup & 0.74 & 2.7\\ \hline
+ferret & 0.18 & 0.1\\ \hline
+freqmine & 0.08 & 0.1\\ \hline
+raytrace & 59.52 & 25.9\\ \hline
+streamcluster & 0.01 & 0.1\\ \hline
+swaptions & 0.01 & 0.1\\ \hline
+\end{tabular}
+\end{table}
+\subsection{실험 결과}
+해당 실험결과는 native 입력 데이터셋을 기준으로 스레드 숫자를 늘려가며 기대하는 선형적인 확장성을 보여줄 수 있는지 확인한 결과이다. 가장 좋은 결과를 보여준 blackscholes 를 제외하고 A,B 그룹 2가지로 나누어서 결과를 유추할 수 있다.
+\begin{itemize}
+\item \textbf{blackscholes} :
+해당 프로그램의 비 ROI 실행 시간은 대부분을 입력 값을 초기화하는 곳에 사용한다. 또한 표 ~\ref{tab:workload} 에서 확인 할 수 있듯이 동기화와 데이터 공유의 빈도가 매우 낮다. 이로 인해서 완벽한 선형은 아니지만 다른 8개의 벤치마크에 비해서 가장 높은 멀티스레딩 대비 확장성을 보여준다.
+\item \textbf{A 그룹} (bodytrack,canneal,dedup,ferret,freqmine) : 해당 그룹에 속하는 프로그램들은 모두 동기화와 데이터 공유의 빈도가 매우 높다. 결과도 성능이 비교적 완만하게 증가하다가 오히려 10~20 스레드 사이에서부터 성능의 하락이 일어나고 있다. 따라서 측정된 프로그램들 중 가장 확장성이 낮은 그룹이라고 볼 수 있다.
+\item \textbf{B 그룹} (streamcluster,raytrace,swaption) : 해당 그룹에 속하는 프로그램들은 동기화 빈도는 높지만 데이터공유의 정도가 낮은 그룹이다. 그림 ~\ref{fig:parsec} 에서 그룹 B 에 속해있는 프로그램들의 그래프를 살펴보면, 오히려 스레드 숫자가 50개 정도일 때 까지는 선형적인 확장성을 보이고 있다. 심지어 streamcluster 의 경우 스레드가 낮을때에 국한해서 blackscholes 의 확장성을 훨씬 웃돌고 있다. 하지만 모두 일정 스레드 이후에는 성능이 더이상 증가하고 있지 않다.
+\end{itemize}
 
-PARSEC의 실험 결과는 그림 ~\ref{fig:parsec}와 같다. 
-
-Blackscholes.은 뭐 어쩌구 저쩌구\ldots 등등\ldots.
-
+\begin{table}[]
+\centering
+\caption{결과그룹}
+\label{tab:result_group}
+\begin{tabular}{|c|c|}
+\hline
+\multicolumn{2}{|c|}{데이터 공유}                                                                                                                                         \\ \hline
+높음                                                                                   & 낮음                                                                            \\ \hline
+\begin{tabular}[c]{@{}c@{}}bodytrack,dedup,canneal\\ ferret,freqmine(A)\end{tabular} & \begin{tabular}[c]{@{}c@{}}streamcluster\\ raytrace,swaptions(B)\end{tabular} \\ \hline
+\end{tabular}
+\end{table}
 \section{결론 및 향후 연구}
 
 PARSEC의 ROI 부분만 측정하여 분석한 결과 PASEC의 대부분의 워크로드는 확장성에 문제를 
-가지고 있다. PARSEC은 공유 메모리 기반의 멀티 쓰레드를 이용한 워크로드로 구성되어 
-있는 벤치마크이다.
+가지고 있다. 특히 표 ~\ref{tab:result_group}의 그룹 A와 B 를 비교해보았을때 데이터공유 문제가 스레드가 많아지면 많아질 수록 부각 되는 것을 확인할 수 있었다.  PARSEC은 공유 메모리 기반의 멀티 쓰레드를 이용한 워크로드로 구성되어 있는 벤치마크이다.
 향후 연구로는 본 연구의 결과를 이용하여 리눅스의 매니코어 시스템에서 멀티 쓰레드의 
 문제점을 분석할 예정이다.
 
