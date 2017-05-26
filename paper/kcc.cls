@@ -69,19 +69,19 @@
             \vspace{40pt}
 %           \vphantom{\fontsize{10}{10}\selectfont {\bfseries {\@author}}}
         \else
-            {\fontsize{10}{10}\selectfont {\bfseries {\@author}}}
+            {\fontsize{10}{10}\selectfont { {\@author}}}
         \fi
         \par
-       \vspace{18mm}
+       \vspace{3mm}
         {\fontsize{14}{14}\selectfont {\bfseries {\@engtitle}} \par}
         \vspace{2mm}
         \if@preprint
             \vspace{26pt}
 %           \vphantom{\fontsize{10}{10}\selectfont {\bfseries {\@engauthor}}}
         \else
-            {\fontsize{10}{10}\selectfont {\bfseries {\@engauthor}}}
+            {\fontsize{10}{10}\selectfont { {\@engauthor}}}
         \fi
-        \vspace{18mm}
+        \vspace{4mm}
         {\bfseries 요 \ \ 약 \par}
         \vspace{3mm}
         \parbox{14.8cm}{\fontsize{9}{9}\selectfont {\quad\@abstract} \par}
